@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>旅遊計畫助手 - 中文優化版</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body { background-color: #F1F7F9; font-family: 'Noto Sans TC', sans-serif; color: #334155; }
+        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background-color: #ffffff; padding-bottom: 40px; }
+        .header-bg { background: linear-gradient(135deg, #01579B 0%, #0288D1 100%); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; padding: 40px 24px; color: white; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; margin-bottom: 16px; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 12px; font-size: 13px; transition: 0.3s; cursor: pointer; }
+        .tab-btn.active { background-color: #01579B; color: white; font-weight: bold; }
+        .checklist-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
+        .checklist-item.checked { opacity: 0.5; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="app-container">
+    <div class="header-bg relative">
+        <h1 contenteditable="true" class="text-2xl font-bold outline-none mb-1">旅遊名稱</h1>
+        <p class="text-[10px] opacity-70">點擊標題可直接編輯</p>
+        
+        <div class="mt-6 flex justify-between items-end">
+            <div>
+                <p class="text-xs opacity-80">{{ location.name }} 即時氣溫</p>
+                <div class="text-4xl font-bold">{{ weather.temp }}°C</div>
+            </div>
+            <div class="text-right">
+                <i :class="weather.icon" class="text-4xl mb-1"></i>
+                <p class="text-xs">{{ weather.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex p-4 gap-2">
+        <div v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" 
+             :class="['tab-btn', currentTab === tab.id ? 'active' : 'bg-slate-100 text-slate-500']">
+            <i :class="tab.icon" class="block mb-1 text-lg"></i>{{ tab.name }}
+        </div>
+    </div>
+
+    <main class="px-4">
+        <div v-if="currentTab === 'packing'" class="animate-fade-in">
+            <div v-for="(items, category) in packingList" :key="category" class="card">
+                <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center">
+                    <i class="fa-solid fa-tag mr-2 text-blue-400"></i>{{ category }}
+                </h3>
+                <div v-for="item in items" :key="item.name" @click="item.checked = !item.checked" 
+                     :class="['checklist-item', item.checked ? 'checked' : '']">
+                    <i :class="item.checked ? 'fa-solid fa-circle-check text-green-500' : 'fa-regular fa-circle text-slate-300'" class="mr-3"></i>
+                    <span class="text-sm">{{ item.name }}</span>
+                    <span v-if="item.important" class="ml-auto text-[9px] bg-red-100 text-red-500 px-1.5 py-0.5 rounded">必帶</span>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="currentTab === 'currency'" class="animate-fade-in">
+            <div class="card bg-slate-900 text-white border-none">
+                <h3 class="font-bold mb-4 text-sm"><i class="fa-solid fa-coins mr-2 text-yellow-400"></i>即時換算</h3>
+                <div class="space-y-4">
+                    <select v-model="targetCurrency" @change="fetchExchangeRate" class="w-full bg-white/10 p-3 rounded-xl outline-none text-white font-bold border border-white/10">
+                        <option value="JPY">日幣 JPY</option>
+                        <option value
